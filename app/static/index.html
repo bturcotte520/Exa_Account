@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Account Watch</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <header class="topbar"><h1>Account Watch</h1><span id="connection" class="connection" role="status">Connecting</span></header>
+  <main>
+    <div id="recording-banner" class="recording-banner" hidden><div><strong id="recording-label">Recorded session</strong><span id="recording-date"></span><span>Read-only</span></div><button id="exit-recording">Exit recording</button></div>
+    <div id="notice" class="notice" role="status" hidden></div>
+    <div id="error-banner" class="error-banner" role="alert" hidden><p id="error-message"></p><button id="dismiss-error" aria-label="Dismiss error">Dismiss</button></div>
+    <div id="busy-status" class="notice" role="status" hidden></div>
+    <nav class="workflow" aria-label="Research workflow"><button data-stage="criteria">1. Criteria &amp; Search</button><button data-stage="accounts">2. Select companies</button><button data-stage="research">3. Locations &amp; Agent</button><button data-stage="review">4. Review &amp; Monitor</button></nav>
+    <details class="panel" id="criteria-panel" open><summary>Research criteria</summary><div class="disclosure-body">
+      <p class="muted">Edit the next discovery. Each session saves its own criteria; existing research is never relabeled.</p>
+      <form id="criteria-form" class="criteria">
+        <label>Geography<input id="criteria-geography" required maxlength="1000" value="US West Coast (California, Oregon, Washington)"></label>
+        <label>Accounts<input id="criteria-accounts" required maxlength="1000" value="Regional fitness chains"></label>
+        <label>Qualifications<textarea id="criteria-qualifications" aria-label="Qualifications" required maxlength="4000">2+ operating locations and expansion</textarea></label>
+        <div class="criterion"><label>Research window<select id="criteria-window-mode" aria-label="Research window"><option value="days">Lookback days</option><option value="dates">Exact dates</option></select></label><label id="days-label">Days<input id="criteria-days" type="number" min="1" max="3650" value="90" required></label><div id="criteria-dates" hidden><label>Start date<input id="criteria-start" type="date"></label><label>End date<input id="criteria-end" type="date"></label></div></div>
+      </form>
+      <section class="action-bar" aria-label="Research actions"><button id="preview-search">Preview two queries</button><button id="discover" class="primary">Discover companies</button><button id="candidates-button">Candidates <span id="candidate-count" class="count">0</span></button></section>
+      <div id="search-preview" hidden></div>
+      <p class="status-line">Displayed session: <span id="research-geography"></span> / <span id="window-dates"></span> <small id="window-caption"></small></p>
+    </div></details>
+    <details class="panel"><summary>Summary (all saved geographies)</summary><section class="summary-strip disclosure-body" aria-label="Research summary">
+      <div><strong id="account-count">0</strong><span>Researched / 5 target</span></div>
+      <div><strong id="qualified-count">0</strong><span>Qualified</span></div>
+      <div><strong id="review-count">0</strong><span>Needs review</span></div>
+      <div><strong id="reported-cost">Not reported</strong><span>Latest response cost</span></div>
+    </section></details>
+    <section id="workspace" class="workspace" aria-label="Research workspace">
+      <details class="ledger panel" open><summary>Accounts <span id="ledger-count" class="count">0</span></summary>
+        <p class="workflow-hint">Add companies from Candidates, then Research selected. Open any company name for locations, Agent criteria, sources, Connect / Fiber, updates and Monitor.</p>
+        <div class="ledger-toolbar"><label class="search-field"><span class="sr-only">Filter accounts</span><input id="account-search" type="search" placeholder="Account or domain"></label><label><span class="sr-only">Filter by fit</span><select id="fit-filter"><option value="all">All assessments</option><option value="qualifies">Qualifies</option><option value="needs_review">Needs review</option><option value="does_not_qualify">Does not qualify</option></select></label></div>
+        <div class="table-scroll"><table><thead><tr><th scope="col"><span class="sr-only">Select</span></th><th scope="col">Company / domain</th><th scope="col">Assessment</th><th scope="col">Supported operating sites</th><th scope="col">Last researched</th></tr></thead><tbody id="account-rows"></tbody></table></div>
+        <div id="ledger-empty" class="empty-state">No accounts yet. Discover companies, then use Add to research on a source-backed company.</div>
+        <div class="ledger-footer"><span id="selection-label">0 selected</span><button id="research" class="primary" disabled>Research selected</button></div>
+      </details>
+      <section id="research-progress" class="panel disclosure-body" aria-label="Research progress" hidden></section>
+      <aside id="account-detail" class="detail panel" aria-label="Account detail" hidden>
+        <div id="detail-content" hidden><div id="detail-heading" class="detail-heading"></div><div id="account-tabs" class="tabs" role="tablist" aria-label="Account sections"></div><div id="account-panel" class="tab-content" role="tabpanel" tabindex="0"></div></div>
+      </aside>
+    </section>
+    <details class="panel"><summary>Workspace tools</summary><div class="tools disclosure-body">
+      <section><h2>Recordings</h2><div class="button-row"><button id="save-recording">Save recording</button><button id="open-recording">Open recording</button><input id="recording-file" type="file" accept="application/json,.json" hidden></div></section>
+      <section><h2>Export</h2><div class="button-row"><button id="export-csv">CSV</button><button id="export-json">JSON</button></div></section>
+      <section><h2>Configuration</h2><div class="button-row"><button id="inspect-button">Inspect request</button><button id="settings-button">Settings</button></div></section>
+    </div></details>
+  </main>
+  <dialog id="candidates-dialog" class="drawer" aria-labelledby="candidates-title"><div class="dialog-heading"><h2 id="candidates-title">Candidates</h2><button class="icon-button" data-close="candidates-dialog" aria-label="Close candidates">&#215;</button></div><div id="candidate-list"></div><button id="review-selection">Review selected accounts</button></dialog>
+  <dialog id="inspector-dialog" class="inspector" aria-labelledby="inspector-title"><div class="dialog-heading"><h2 id="inspector-title">Requests</h2><button class="icon-button" data-close="inspector-dialog" aria-label="Close inspector">&#215;</button></div><label class="artifact-picker">Request <select id="artifact-select"></select></label><details><summary>Metadata</summary><div id="artifact-meta" class="metadata"></div></details><div id="inspector-tabs" class="tabs" role="tablist" aria-label="Inspector sections"></div><div id="inspector-content" class="inspector-content" role="tabpanel" tabindex="0"></div></dialog>
+  <dialog id="settings-dialog" class="modal" aria-labelledby="settings-title"><div class="dialog-heading"><h2 id="settings-title">Settings</h2><button class="icon-button" data-close="settings-dialog" aria-label="Close settings">&#215;</button></div><p id="key-status"></p><form id="settings-form"><label>HTTPS receiver URL (port 8788)<input id="receiver-url" type="url" placeholder="https://your-receiver.example" autocomplete="off"></label><button class="primary" type="submit">Save</button></form></dialog>
+  <dialog id="confirm-dialog" class="modal" aria-labelledby="confirm-title"><div class="dialog-heading"><h2 id="confirm-title">Confirm paid action</h2></div><p id="confirm-description"></p><p class="cost-warning">Usage charges apply. Total cost is unknown.</p><div class="button-row dialog-actions"><button id="confirm-cancel">Cancel</button><button id="confirm-proceed" class="primary">Confirm</button></div></dialog>
+</body>
+</html>
